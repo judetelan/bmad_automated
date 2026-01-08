@@ -178,3 +178,112 @@ func TestReader_GetStoryStatus_FileNotFound(t *testing.T) {
 	assert.Equal(t, Status(""), status)
 	assert.Contains(t, err.Error(), "failed to read sprint status")
 }
+
+func TestReader_GetEpicStories_Success(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	statusDir := filepath.Join(tmpDir, "_bmad-output", "implementation-artifacts")
+	err := os.MkdirAll(statusDir, 0755)
+	require.NoError(t, err)
+
+	statusContent := `development_status:
+  6-1-define-schema: ready-for-dev
+  6-2-create-api: in-progress
+  6-3-build-ui: backlog
+  7-1-other-epic: done
+`
+	statusPath := filepath.Join(statusDir, "sprint-status.yaml")
+	err = os.WriteFile(statusPath, []byte(statusContent), 0644)
+	require.NoError(t, err)
+
+	reader := NewReader(tmpDir)
+	stories, err := reader.GetEpicStories("6")
+
+	require.NoError(t, err)
+	assert.Len(t, stories, 3)
+	assert.Equal(t, []string{"6-1-define-schema", "6-2-create-api", "6-3-build-ui"}, stories)
+}
+
+func TestReader_GetEpicStories_NumericSorting(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	statusDir := filepath.Join(tmpDir, "_bmad-output", "implementation-artifacts")
+	err := os.MkdirAll(statusDir, 0755)
+	require.NoError(t, err)
+
+	// Story numbers 1, 2, 10 should sort as 1, 2, 10 (not 1, 10, 2 alphabetically)
+	statusContent := `development_status:
+  6-10-last: backlog
+  6-2-middle: ready-for-dev
+  6-1-first: in-progress
+`
+	statusPath := filepath.Join(statusDir, "sprint-status.yaml")
+	err = os.WriteFile(statusPath, []byte(statusContent), 0644)
+	require.NoError(t, err)
+
+	reader := NewReader(tmpDir)
+	stories, err := reader.GetEpicStories("6")
+
+	require.NoError(t, err)
+	assert.Len(t, stories, 3)
+	// Should be sorted numerically: 1, 2, 10
+	assert.Equal(t, []string{"6-1-first", "6-2-middle", "6-10-last"}, stories)
+}
+
+func TestReader_GetEpicStories_FiltersOutOtherEpics(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	statusDir := filepath.Join(tmpDir, "_bmad-output", "implementation-artifacts")
+	err := os.MkdirAll(statusDir, 0755)
+	require.NoError(t, err)
+
+	statusContent := `development_status:
+  6-1-story: backlog
+  6-2-story: ready-for-dev
+  7-1-other: in-progress
+  8-1-another: done
+`
+	statusPath := filepath.Join(statusDir, "sprint-status.yaml")
+	err = os.WriteFile(statusPath, []byte(statusContent), 0644)
+	require.NoError(t, err)
+
+	reader := NewReader(tmpDir)
+	stories, err := reader.GetEpicStories("6")
+
+	require.NoError(t, err)
+	assert.Len(t, stories, 2)
+	assert.Equal(t, []string{"6-1-story", "6-2-story"}, stories)
+}
+
+func TestReader_GetEpicStories_NoStoriesFound(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	statusDir := filepath.Join(tmpDir, "_bmad-output", "implementation-artifacts")
+	err := os.MkdirAll(statusDir, 0755)
+	require.NoError(t, err)
+
+	statusContent := `development_status:
+  7-1-other: backlog
+`
+	statusPath := filepath.Join(statusDir, "sprint-status.yaml")
+	err = os.WriteFile(statusPath, []byte(statusContent), 0644)
+	require.NoError(t, err)
+
+	reader := NewReader(tmpDir)
+	stories, err := reader.GetEpicStories("6")
+
+	assert.Error(t, err)
+	assert.Nil(t, stories)
+	assert.Contains(t, err.Error(), "no stories found for epic: 6")
+}
+
+func TestReader_GetEpicStories_FileNotFound(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	reader := NewReader(tmpDir)
+	stories, err := reader.GetEpicStories("6")
+
+	assert.Error(t, err)
+	assert.Nil(t, stories)
+	assert.Contains(t, err.Error(), "failed to read sprint status")
+}
