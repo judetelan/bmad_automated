@@ -23,11 +23,15 @@ type StatusWriter interface {
 	UpdateStatus(storyKey string, newStatus status.Status) error
 }
 
+// ProgressCallback is called before each workflow step executes.
+type ProgressCallback func(stepIndex, totalSteps int, workflow string)
+
 // Executor runs the complete lifecycle for a story.
 type Executor struct {
-	runner       WorkflowRunner
-	statusReader StatusReader
-	statusWriter StatusWriter
+	runner           WorkflowRunner
+	statusReader     StatusReader
+	statusWriter     StatusWriter
+	progressCallback ProgressCallback
 }
 
 // NewExecutor creates a new Executor with the given dependencies.
@@ -37,6 +41,11 @@ func NewExecutor(runner WorkflowRunner, reader StatusReader, writer StatusWriter
 		statusReader: reader,
 		statusWriter: writer,
 	}
+}
+
+// SetProgressCallback sets an optional callback that is invoked before each workflow step.
+func (e *Executor) SetProgressCallback(cb ProgressCallback) {
+	e.progressCallback = cb
 }
 
 // Execute runs the complete lifecycle for a story from its current status to done.
@@ -53,8 +62,16 @@ func (e *Executor) Execute(ctx context.Context, storyKey string) error {
 		return err // Returns router.ErrStoryComplete for done stories
 	}
 
+	// Get total steps count for progress reporting
+	totalSteps := len(steps)
+
 	// Execute each step in sequence
-	for _, step := range steps {
+	for i, step := range steps {
+		// Call progress callback if set
+		if e.progressCallback != nil {
+			e.progressCallback(i+1, totalSteps, step.Workflow)
+		}
+
 		// Run the workflow
 		exitCode := e.runner.RunSingle(ctx, step.Workflow, storyKey)
 		if exitCode != 0 {

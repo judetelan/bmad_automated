@@ -211,6 +211,103 @@ func TestExecute(t *testing.T) {
 	}
 }
 
+func TestProgressCallback(t *testing.T) {
+	tests := []struct {
+		name          string
+		currentStatus status.Status
+		wantCalls     []struct {
+			stepIndex  int
+			totalSteps int
+			workflow   string
+		}
+	}{
+		{
+			name:          "backlog story calls callback 4 times",
+			currentStatus: status.StatusBacklog,
+			wantCalls: []struct {
+				stepIndex  int
+				totalSteps int
+				workflow   string
+			}{
+				{1, 4, "create-story"},
+				{2, 4, "dev-story"},
+				{3, 4, "code-review"},
+				{4, 4, "git-commit"},
+			},
+		},
+		{
+			name:          "ready-for-dev story calls callback 3 times",
+			currentStatus: status.StatusReadyForDev,
+			wantCalls: []struct {
+				stepIndex  int
+				totalSteps int
+				workflow   string
+			}{
+				{1, 3, "dev-story"},
+				{2, 3, "code-review"},
+				{3, 3, "git-commit"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Track callback invocations
+			var callbackCalls []struct {
+				stepIndex  int
+				totalSteps int
+				workflow   string
+			}
+
+			runner := &MockWorkflowRunner{}
+			reader := &MockStatusReader{
+				GetStoryStatusFunc: func(storyKey string) (status.Status, error) {
+					return tt.currentStatus, nil
+				},
+			}
+			writer := &MockStatusWriter{}
+
+			executor := NewExecutor(runner, reader, writer)
+			executor.SetProgressCallback(func(stepIndex, totalSteps int, workflow string) {
+				callbackCalls = append(callbackCalls, struct {
+					stepIndex  int
+					totalSteps int
+					workflow   string
+				}{stepIndex, totalSteps, workflow})
+			})
+
+			err := executor.Execute(context.Background(), "test-story")
+			require.NoError(t, err)
+
+			// Verify callback was called with correct arguments
+			require.Len(t, callbackCalls, len(tt.wantCalls))
+			for i, want := range tt.wantCalls {
+				assert.Equal(t, want.stepIndex, callbackCalls[i].stepIndex, "stepIndex mismatch at call %d", i)
+				assert.Equal(t, want.totalSteps, callbackCalls[i].totalSteps, "totalSteps mismatch at call %d", i)
+				assert.Equal(t, want.workflow, callbackCalls[i].workflow, "workflow mismatch at call %d", i)
+			}
+		})
+	}
+}
+
+func TestProgressCallbackNotSet(t *testing.T) {
+	// Verify that execution works without a callback set (no panic)
+	runner := &MockWorkflowRunner{}
+	reader := &MockStatusReader{
+		GetStoryStatusFunc: func(storyKey string) (status.Status, error) {
+			return status.StatusBacklog, nil
+		},
+	}
+	writer := &MockStatusWriter{}
+
+	executor := NewExecutor(runner, reader, writer)
+	// Do NOT set progress callback
+
+	err := executor.Execute(context.Background(), "test-story")
+	require.NoError(t, err)
+	assert.Len(t, runner.Calls, 4) // All 4 workflows should run
+}
+
 func TestGetSteps(t *testing.T) {
 	tests := []struct {
 		name          string
