@@ -108,7 +108,7 @@ Plans:
 Plans:
 
 - [x] 17-01: PACKAGES.md - lifecycle and state package documentation
-- [ ] 17-02: USER_GUIDE.md and CLI_REFERENCE.md - v1.1 features
+- [x] 17-02: USER_GUIDE.md and CLI_REFERENCE.md - v1.1 features
 - [ ] 17-03: ARCHITECTURE.md, README.md, DEVELOPMENT.md - diagrams and structure
 
 #### Phase 18: Contribution Guide
@@ -140,6 +140,6 @@ Plans:
 | 14. GoDoc Core Packages       | v1.2      | 3/3            | Complete    | 2026-01-09 |
 | 15. GoDoc Supporting Packages | v1.2      | 3/3            | Complete    | 2026-01-09 |
 | 16. Package Documentation     | v1.2      | 3/3            | Complete    | 2026-01-09 |
-| 17. Update Docs Folder        | v1.2      | 1/3            | In progress | -          |
+| 17. Update Docs Folder        | v1.2      | 2/3            | In progress | -          |
 | 18. Contribution Guide        | v1.2      | 0/?            | Not started | -          |
 | 19. API Examples              | v1.2      | 0/?            | Not started | -          |
