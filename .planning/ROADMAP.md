@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 Status-Based Workflow Routing** — Phases 1-5 (shipped 2026-01-08)
-- 🚧 **v1.1 Full Story Lifecycle** — Phases 6-13 (in progress)
+- ✅ **v1.1 Full Story Lifecycle** — Phases 6-13 (complete)
 
 ## Completed Milestones
 
@@ -22,7 +22,7 @@
 
 </details>
 
-### 🚧 v1.1 Full Story Lifecycle (In Progress)
+### ✅ v1.1 Full Story Lifecycle (Complete)
 
 **Milestone Goal:** Run the complete story lifecycle (create→dev→review→commit) for each story before moving to the next, with error recovery, dry-run mode, and enhanced progress UI.
 
@@ -146,16 +146,16 @@ Plans:
 - Shows workflow sequence without executing
 - Lists stories and their lifecycle steps
 
-#### Phase 13: Enhanced Progress UI
+#### Phase 13: Enhanced Progress UI ✅
 
 **Goal**: Better visibility into lifecycle progress
 **Depends on**: Phase 12
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
 
-- [ ] 13-01: TBD (run /gsd:plan-phase 13 to break down)
+- [x] 13-01: Step Progress UI — completed 2026-01-09
 
 **Details:**
 
@@ -165,18 +165,18 @@ Plans:
 
 ## Progress
 
-| Phase                       | Milestone | Plans Complete | Status      | Completed  |
-| --------------------------- | --------- | -------------- | ----------- | ---------- |
-| 1. Sprint Status Reader     | v1.0      | 1/1            | Complete    | 2026-01-08 |
-| 2. Workflow Router          | v1.0      | 1/1            | Complete    | 2026-01-08 |
-| 3. Update Run Command       | v1.0      | 1/1            | Complete    | 2026-01-08 |
-| 4. Update Queue Command     | v1.0      | 1/1            | Complete    | 2026-01-08 |
-| 5. Epic Command             | v1.0      | 1/1            | Complete    | 2026-01-08 |
-| 6. Lifecycle Definition     | v1.1      | 1/1            | Complete    | 2026-01-08 |
-| 7. Story Lifecycle Executor | v1.1      | 2/2            | Complete    | 2026-01-09 |
-| 8. Update Run Command       | v1.1      | 1/1            | Complete    | 2026-01-09 |
-| 9. Update Epic Command      | v1.1      | 1/1            | Complete    | 2026-01-09 |
-| 10. Update Queue Command    | v1.1      | 1/1            | Complete    | 2026-01-09 |
-| 11. Error Recovery & Resume | v1.1      | 1/1            | Complete    | 2026-01-09 |
-| 12. Dry Run Mode            | v1.1      | 2/2            | Complete    | 2026-01-09 |
-| 13. Enhanced Progress UI    | v1.1      | 0/?            | Not started | -          |
+| Phase                       | Milestone | Plans Complete | Status   | Completed  |
+| --------------------------- | --------- | -------------- | -------- | ---------- |
+| 1. Sprint Status Reader     | v1.0      | 1/1            | Complete | 2026-01-08 |
+| 2. Workflow Router          | v1.0      | 1/1            | Complete | 2026-01-08 |
+| 3. Update Run Command       | v1.0      | 1/1            | Complete | 2026-01-08 |
+| 4. Update Queue Command     | v1.0      | 1/1            | Complete | 2026-01-08 |
+| 5. Epic Command             | v1.0      | 1/1            | Complete | 2026-01-08 |
+| 6. Lifecycle Definition     | v1.1      | 1/1            | Complete | 2026-01-08 |
+| 7. Story Lifecycle Executor | v1.1      | 2/2            | Complete | 2026-01-09 |
+| 8. Update Run Command       | v1.1      | 1/1            | Complete | 2026-01-09 |
+| 9. Update Epic Command      | v1.1      | 1/1            | Complete | 2026-01-09 |
+| 10. Update Queue Command    | v1.1      | 1/1            | Complete | 2026-01-09 |
+| 11. Error Recovery & Resume | v1.1      | 1/1            | Complete | 2026-01-09 |
+| 12. Dry Run Mode            | v1.1      | 2/2            | Complete | 2026-01-09 |
+| 13. Enhanced Progress UI    | v1.1      | 1/1            | Complete | 2026-01-09 |
