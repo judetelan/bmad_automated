@@ -18,25 +18,43 @@ import (
 	"bmad-automate/internal/status"
 )
 
-// WorkflowRunner is the interface for running workflows.
+// WorkflowRunner is the interface for executing individual workflows.
+//
+// RunSingle executes a named workflow for a story and returns the exit code.
+// An exit code of 0 indicates success; any non-zero value indicates failure.
+// The [workflow.Runner] type implements this interface.
 type WorkflowRunner interface {
 	RunSingle(ctx context.Context, workflowName, storyKey string) int
 }
 
-// StatusReader is the interface for reading story status.
+// StatusReader is the interface for looking up story status.
+//
+// GetStoryStatus retrieves the current [status.Status] for a story key.
+// It returns an error if the story cannot be found or the status file is invalid.
 type StatusReader interface {
 	GetStoryStatus(storyKey string) (status.Status, error)
 }
 
-// StatusWriter is the interface for updating story status.
+// StatusWriter is the interface for persisting story status updates.
+//
+// UpdateStatus sets a new [status.Status] for a story after successful workflow completion.
+// It returns an error if the status file cannot be written.
 type StatusWriter interface {
 	UpdateStatus(storyKey string, newStatus status.Status) error
 }
 
-// ProgressCallback is called before each workflow step executes.
+// ProgressCallback is invoked before each workflow step begins execution.
+//
+// The callback receives stepIndex (1-based), totalSteps count, and the workflow name.
+// This enables progress reporting in the UI. The callback is optional and can be set
+// via [Executor.SetProgressCallback].
 type ProgressCallback func(stepIndex, totalSteps int, workflow string)
 
-// Executor runs the complete lifecycle for a story.
+// Executor orchestrates the complete story lifecycle from current status to done.
+//
+// Executor uses dependency injection for testability: [WorkflowRunner] executes workflows,
+// [StatusReader] looks up current status, and [StatusWriter] persists status updates.
+// Use [NewExecutor] to create an instance and [Execute] to run the lifecycle.
 type Executor struct {
 	runner           WorkflowRunner
 	statusReader     StatusReader
@@ -44,7 +62,11 @@ type Executor struct {
 	progressCallback ProgressCallback
 }
 
-// NewExecutor creates a new Executor with the given dependencies.
+// NewExecutor creates a new Executor with the required dependencies.
+//
+// The runner executes workflows, reader looks up story status, and writer persists
+// status updates. Progress callback is not set by default; use [SetProgressCallback]
+// to enable progress reporting.
 func NewExecutor(runner WorkflowRunner, reader StatusReader, writer StatusWriter) *Executor {
 	return &Executor{
 		runner:       runner,
@@ -53,12 +75,24 @@ func NewExecutor(runner WorkflowRunner, reader StatusReader, writer StatusWriter
 	}
 }
 
-// SetProgressCallback sets an optional callback that is invoked before each workflow step.
+// SetProgressCallback configures an optional progress callback for workflow execution.
+//
+// The callback receives the step index (1-based), total step count, and workflow name
+// before each workflow begins. This is typically used to display progress information
+// in the terminal UI.
 func (e *Executor) SetProgressCallback(cb ProgressCallback) {
 	e.progressCallback = cb
 }
 
-// Execute runs the complete lifecycle for a story from its current status to done.
+// Execute runs the complete story lifecycle from current status to done.
+//
+// Execute looks up the story's current status, determines the remaining workflow steps
+// via [router.GetLifecycle], and runs each workflow in sequence. After each successful
+// workflow, the story status is updated to the next state.
+//
+// Execute uses fail-fast behavior: it stops on the first error and returns immediately.
+// Errors can occur from status lookup failure, workflow execution failure (non-zero exit),
+// or status update failure. For stories already done, Execute returns [router.ErrStoryComplete].
 func (e *Executor) Execute(ctx context.Context, storyKey string) error {
 	// Get current story status
 	currentStatus, err := e.statusReader.GetStoryStatus(storyKey)
@@ -97,8 +131,14 @@ func (e *Executor) Execute(ctx context.Context, storyKey string) error {
 	return nil
 }
 
-// GetSteps returns the lifecycle steps for a story without executing them.
-// This is used for dry-run preview to show what workflows would execute.
+// GetSteps returns the remaining lifecycle steps for a story without executing them.
+//
+// GetSteps provides dry-run preview functionality, showing what workflows would execute
+// and what status transitions would occur. This is useful for displaying the planned
+// execution path before actually running workflows.
+//
+// Returns an error if status lookup fails. For stories already done, returns
+// [router.ErrStoryComplete].
 func (e *Executor) GetSteps(storyKey string) ([]router.LifecycleStep, error) {
 	// Get current story status
 	currentStatus, err := e.statusReader.GetStoryStatus(storyKey)
