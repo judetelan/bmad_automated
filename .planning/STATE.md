@@ -4,17 +4,17 @@
 
 See: .planning/PROJECT.md (updated 2026-01-08)
 
-**Core value:** Eliminate manual workflow selection by automatically routing stories to the correct workflow based on their status in sprint-status.yaml.
-**Current focus:** v1.0 complete — planning next milestone
+**Core value:** Run the complete story lifecycle (create→dev→review→commit) for each story before moving to the next, with error recovery, dry-run mode, and enhanced progress UI.
+**Current focus:** v1.1 Full Story Lifecycle — Phase 6
 
 ## Current Position
 
-Phase: v1.0 complete
-Plan: N/A
-Status: Milestone shipped
-Last activity: 2026-01-08 — v1.0 milestone complete
+Phase: 6 of 13 (Lifecycle Definition)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-01-08 — Milestone v1.1 created
 
-Progress: ██████████ 100%
+Progress: ░░░░░░░░░░ 0%
 
 ## Performance Metrics
 
@@ -39,11 +39,23 @@ Progress: ██████████ 100%
 
 ### Decisions
 
-All v1.0 decisions documented in PROJECT.md Key Decisions table with ✓ Good outcomes.
+All v1.0 decisions documented in PROJECT.md Key Decisions table with good outcomes.
+
+**v1.1 Decisions:**
+| Decision | Rationale | Outcome |
+|----------|-----------|---------|
+| Full lifecycle per story | Epic should complete create→dev→review→commit for each story before moving to next | TBD |
+| Auto git-commit+push | After successful code-review, automatically run git-commit and push | TBD |
+| Resume capability | Save state on failure, allow --resume to continue | TBD |
+| Dry-run mode | Preview workflow sequence without executing | TBD |
 
 ### Deferred Issues
 
 None
+
+### Roadmap Evolution
+
+- Milestone v1.1 created: Full Story Lifecycle, 8 phases (Phase 6-13)
 
 ### Blockers/Concerns
 
@@ -52,5 +64,5 @@ None
 ## Session Continuity
 
 Last session: 2026-01-08T20:45:00Z
-Stopped at: v1.0 milestone complete
+Stopped at: Milestone v1.1 initialization
 Resume file: None
