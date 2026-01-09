@@ -111,16 +111,16 @@ Plans:
 - Queue command uses lifecycle executor
 - Consistent behavior with epic and run commands
 
-#### Phase 11: Error Recovery & Resume
+#### Phase 11: Error Recovery & Resume ✅
 
 **Goal**: Save progress state when workflow fails, resume from failure point
 **Depends on**: Phase 10
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
 
-- [ ] 11-01: TBD (run /gsd:plan-phase 11 to break down)
+- [x] 11-01: State Persistence (TDD) — completed 2026-01-09
 
 **Details:**
 
@@ -176,6 +176,6 @@ Plans:
 | 8. Update Run Command       | v1.1      | 1/1            | Complete    | 2026-01-09 |
 | 9. Update Epic Command      | v1.1      | 1/1            | Complete    | 2026-01-09 |
 | 10. Update Queue Command    | v1.1      | 1/1            | Complete    | 2026-01-09 |
-| 11. Error Recovery & Resume | v1.1      | 0/?            | Not started | -          |
+| 11. Error Recovery & Resume | v1.1      | 1/1            | Complete    | 2026-01-09 |
 | 12. Dry Run Mode            | v1.1      | 0/?            | Not started | -          |
 | 13. Enhanced Progress UI    | v1.1      | 0/?            | Not started | -          |
