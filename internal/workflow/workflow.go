@@ -10,14 +10,28 @@ import (
 	"bmad-automate/internal/output"
 )
 
-// Runner executes workflows using Claude.
+// Runner orchestrates workflow execution using Claude CLI.
+//
+// Runner is the primary executor for development workflows. It combines a
+// [claude.Executor] for spawning Claude processes, an [output.Printer] for
+// formatted terminal output, and a [config.Config] for prompt templates.
+//
+// Use [NewRunner] to create a properly initialized Runner instance.
 type Runner struct {
 	executor claude.Executor
 	printer  output.Printer
 	config   *config.Config
 }
 
-// NewRunner creates a new workflow runner.
+// NewRunner creates a new workflow runner with the specified dependencies.
+//
+// Parameters:
+//   - executor: The [claude.Executor] implementation for running Claude CLI
+//   - printer: The [output.Printer] for formatted terminal output
+//   - cfg: The configuration containing workflow prompt templates
+//
+// The executor typically uses [claude.NewExecutor] in production or
+// [claude.MockExecutor] for testing.
 func NewRunner(executor claude.Executor, printer output.Printer, cfg *config.Config) *Runner {
 	return &Runner{
 		executor: executor,
@@ -26,7 +40,13 @@ func NewRunner(executor claude.Executor, printer output.Printer, cfg *config.Con
 	}
 }
 
-// RunSingle executes a single workflow step.
+// RunSingle executes a single named workflow for a story.
+//
+// The workflowName must match a workflow defined in the configuration (e.g.,
+// "analyze", "implement", "test"). The storyKey is substituted into the
+// workflow's prompt template.
+//
+// Returns the exit code from Claude CLI (0 for success, non-zero for failure).
 func (r *Runner) RunSingle(ctx context.Context, workflowName, storyKey string) int {
 	prompt, err := r.config.GetPrompt(workflowName, storyKey)
 	if err != nil {
@@ -38,12 +58,29 @@ func (r *Runner) RunSingle(ctx context.Context, workflowName, storyKey string) i
 	return r.runClaude(ctx, prompt, label)
 }
 
-// RunRaw executes an arbitrary prompt.
+// RunRaw executes an arbitrary prompt without template expansion.
+//
+// Use this method for one-off or custom prompts that don't correspond to
+// configured workflows. The prompt is passed directly to Claude CLI.
+//
+// Returns the exit code from Claude CLI (0 for success, non-zero for failure).
 func (r *Runner) RunRaw(ctx context.Context, prompt string) int {
 	return r.runClaude(ctx, prompt, "raw")
 }
 
-// RunFullCycle executes all steps in the full cycle workflow.
+// RunFullCycle executes all configured steps in sequence for a story.
+//
+// Deprecated: Use the lifecycle package for multi-step workflows with
+// status-based routing instead.
+//
+// This method runs the complete development cycle (analyze, implement, test,
+// etc.) as configured in full_cycle.steps. Each step is executed in order,
+// and execution stops on the first failure.
+//
+// Output includes a cycle header, per-step progress, and a summary with
+// timing information for all completed steps.
+//
+// Returns 0 if all steps succeed, or the exit code from the first failed step.
 func (r *Runner) RunFullCycle(ctx context.Context, storyKey string) int {
 	totalStart := time.Now()
 
@@ -89,7 +126,11 @@ func (r *Runner) RunFullCycle(ctx context.Context, storyKey string) int {
 	return 0
 }
 
-// runClaude executes Claude with the given prompt and handles output.
+// runClaude executes Claude CLI with the given prompt and handles streaming output.
+//
+// This is the core execution method used by all public Runner methods.
+// It displays a command header, streams events to the printer via handleEvent,
+// and displays a footer with timing and exit status.
 func (r *Runner) runClaude(ctx context.Context, prompt, label string) int {
 	r.printer.CommandHeader(label, prompt, r.config.Output.TruncateLength)
 
@@ -111,7 +152,11 @@ func (r *Runner) runClaude(ctx context.Context, prompt, label string) int {
 	return exitCode
 }
 
-// handleEvent processes a single event from Claude.
+// handleEvent routes a Claude streaming event to the appropriate printer method.
+//
+// Events are dispatched based on their type: session start/end, text output,
+// tool usage, and tool results. Each event type is formatted differently
+// by the printer for terminal display.
 func (r *Runner) handleEvent(event claude.Event) {
 	switch {
 	case event.SessionStarted:
