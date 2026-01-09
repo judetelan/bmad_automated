@@ -26,16 +26,16 @@
 
 **Milestone Goal:** Run the complete story lifecycle (create→dev→review→commit) for each story before moving to the next, with error recovery, dry-run mode, and enhanced progress UI.
 
-#### Phase 6: Lifecycle Definition
+#### Phase 6: Lifecycle Definition ✅
 
 **Goal**: Define the full workflow sequence per status and status transitions
 **Depends on**: v1.0 complete
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
 
-- [ ] 06-01: TBD (run /gsd:plan-phase 6 to break down)
+- [x] 06-01: Story Lifecycle Sequence (TDD) — completed 2026-01-08
 
 **Details:**
 
@@ -170,7 +170,7 @@ Plans:
 | 3. Update Run Command       | v1.0      | 1/1            | Complete    | 2026-01-08 |
 | 4. Update Queue Command     | v1.0      | 1/1            | Complete    | 2026-01-08 |
 | 5. Epic Command             | v1.0      | 1/1            | Complete    | 2026-01-08 |
-| 6. Lifecycle Definition     | v1.1      | 0/?            | Not started | -          |
+| 6. Lifecycle Definition     | v1.1      | 1/1            | Complete    | 2026-01-08 |
 | 7. Story Lifecycle Executor | v1.1      | 0/?            | Not started | -          |
 | 8. Update Run Command       | v1.1      | 0/?            | Not started | -          |
 | 9. Update Epic Command      | v1.1      | 0/?            | Not started | -          |
