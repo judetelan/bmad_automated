@@ -1014,6 +1014,182 @@ if errors.Is(err, router.ErrStoryComplete) {
 
 ---
 
+## state
+
+**Package:** `internal/state`
+
+Lifecycle state persistence for resume functionality.
+
+When a lifecycle execution fails (e.g., due to a Claude CLI error), the state is saved to disk so that execution can be resumed from the point of failure rather than starting over from the beginning. This is particularly valuable for long-running story lifecycles.
+
+### Constants
+
+```go
+const StateFileName = ".bmad-state.json"
+```
+
+StateFileName is the name of the state file in the working directory. It is a hidden file (prefixed with ".") to avoid cluttering the directory. The file contains JSON-encoded State data.
+
+```go
+var ErrNoState = errors.New("no state file exists")
+```
+
+ErrNoState is a sentinel error returned by Manager.Load when no state file exists. Callers should treat this as a signal to start a fresh execution rather than as an error condition.
+
+### Types
+
+#### State
+
+Represents the persisted lifecycle execution state.
+
+```go
+type State struct {
+    StoryKey    string `json:"story_key"`     // Story being processed
+    StepIndex   int    `json:"step_index"`    // 0-based index of next step
+    TotalSteps  int    `json:"total_steps"`   // Total lifecycle steps
+    StartStatus string `json:"start_status"`  // Status when execution began
+}
+```
+
+**Fields:**
+
+- `StoryKey` - Identifier of the story being processed
+- `StepIndex` - 0-based index of the step that failed or is next to execute
+- `TotalSteps` - Total number of steps in the lifecycle sequence (for progress display)
+- `StartStatus` - Story's status when execution began (for debugging context)
+
+#### Manager
+
+Handles state persistence operations.
+
+```go
+type Manager struct {
+    dir string  // Working directory for state file
+}
+```
+
+The Manager uses a directory-based approach where the state file is stored in a configurable directory. This enables testability by allowing tests to use temporary directories.
+
+### Functions
+
+#### NewManager
+
+Creates a new state manager for the given directory.
+
+```go
+func NewManager(dir string) *Manager
+```
+
+**Parameters:**
+
+- `dir` - Working directory where state file will be stored (use "." for current directory)
+
+**Returns:**
+
+- Configured `*Manager` ready for use
+
+#### Save
+
+Persists the state to disk atomically.
+
+```go
+func (m *Manager) Save(state State) error
+```
+
+**Parameters:**
+
+- `state` - State to persist
+
+**Returns:**
+
+- `nil` on success
+- Error if marshaling or writing fails
+
+**Behavior:**
+
+The state is first written to a temporary file, then renamed to the final location. This temp file + rename pattern ensures crash safety: the state file is either fully written or not present, never corrupted.
+
+#### Load
+
+Reads the state from disk.
+
+```go
+func (m *Manager) Load() (State, error)
+```
+
+**Returns:**
+
+- Loaded `State` and `nil` on success
+- Empty `State` and `ErrNoState` if no state file exists
+- Empty `State` and error for read or parse failures
+
+#### Clear
+
+Removes the state file if it exists.
+
+```go
+func (m *Manager) Clear() error
+```
+
+**Returns:**
+
+- `nil` on success (including when file doesn't exist)
+- Error if removal fails
+
+This should be called after successful lifecycle completion to clean up. The method is idempotent.
+
+#### Exists
+
+Returns true if a state file exists.
+
+```go
+func (m *Manager) Exists() bool
+```
+
+Quick check to determine if there is saved state to resume from, without loading and parsing the full state data.
+
+#### statePath
+
+Returns the full path to the state file.
+
+```go
+func (m *Manager) statePath() string
+```
+
+Internal helper that joins the directory with StateFileName.
+
+**Example:**
+
+```go
+manager := state.NewManager(".")
+
+// Save state when lifecycle fails
+st := state.State{
+    StoryKey:    "PROJ-123",
+    StepIndex:   2,
+    TotalSteps:  4,
+    StartStatus: "backlog",
+}
+if err := manager.Save(st); err != nil {
+    log.Fatal(err)
+}
+
+// Load state to resume
+loaded, err := manager.Load()
+if errors.Is(err, state.ErrNoState) {
+    fmt.Println("No state to resume, starting fresh")
+} else if err != nil {
+    log.Fatal(err)
+} else {
+    fmt.Printf("Resuming %s from step %d\n", loaded.StoryKey, loaded.StepIndex)
+}
+
+// Clear state after successful completion
+manager.Clear()
+```
+
+---
+
 ## status
 
 **Package:** `internal/status`
