@@ -126,6 +126,7 @@ func NewExecutor(config ExecutorConfig) *DefaultExecutor {
 func (e *DefaultExecutor) Execute(ctx context.Context, prompt string) (<-chan Event, error) {
 	cmd := exec.CommandContext(ctx, e.config.BinaryPath,
 		"--dangerously-skip-permissions",
+		"--verbose",
 		"-p", prompt,
 		"--output-format", e.config.OutputFormat,
 	)
@@ -174,6 +175,7 @@ func (e *DefaultExecutor) Execute(ctx context.Context, prompt string) (<-chan Ev
 func (e *DefaultExecutor) ExecuteWithResult(ctx context.Context, prompt string, handler EventHandler) (int, error) {
 	cmd := exec.CommandContext(ctx, e.config.BinaryPath,
 		"--dangerously-skip-permissions",
+		"--verbose",
 		"-p", prompt,
 		"--output-format", e.config.OutputFormat,
 	)
